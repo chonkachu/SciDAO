@@ -1,0 +1,14 @@
+#root {
+  width: 100%; /* Changed from fixed 900px */
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex; /* Add this */
+  flex-direction: column; /* Add this */
+}
+
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
