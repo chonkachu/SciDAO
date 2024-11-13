@@ -18,6 +18,7 @@ export default function DAOApp() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [communityCheckStatus, setCommunityCheckStatus] = useState(null);
   const [roundDetails, setRoundDetails] = useState(null);
+  const [voteDetails, setVoteDetails] = useState(null);
 
   const tokensToWei = (tokens) => {
     return BigInt(Math.floor(tokens)) * TOKENS_TO_WEI;
@@ -44,6 +45,7 @@ export default function DAOApp() {
         const account = await signer.getAddress();
         const contract = new Contract(DAO_ADDRESS, DAO_ABI, signer);
 
+        await loadUserInfo(account, contract);
         setProvider(provider);
         setContract(contract);
         setAccount(account);
@@ -51,7 +53,6 @@ export default function DAOApp() {
         console.log(account);
 
         // Load user info if exists
-        await loadUserInfo(account, contract);
       }
     } catch (err) {
       setError('Failed to connect wallet: ' + err.message);
@@ -120,6 +121,11 @@ const loadCommunityCheckStatus = async (projectId) => {
         totalVotesCast: round[1].toString(),
         completed: round[2],
         rewardDistributed: round[3]
+      });
+      const vote = await contract.getVoteDetails(projectId, account);
+      setVoteDetails({
+        tokens: vote[0],
+        hasVoted: vote[1]
       });
     }
   } catch (err) {
@@ -212,7 +218,7 @@ const RoundVoting = ({ project }) => {
       await tx.wait();
       await loadCommunityCheckStatus(project.id);
     } catch (err) {
-      setError('Failed to cast round vote: ' + err.message);
+      setError('Failed to cast round vote: User Already voted!');
     } finally {
       setLoading(false);
     }
@@ -234,7 +240,7 @@ const RoundVoting = ({ project }) => {
   const now = Date.now();
   const roundEndTime = roundDetails?.startTime?.getTime() + (7 * 24 * 60 * 60 * 1000); // 7 days
   const roundEnded = roundEndTime && now > roundEndTime;
-  const canVote = communityCheckStatus?.initiated && roundDetails && !roundDetails.completed && !roundEnded;
+  const canVote = communityCheckStatus?.initiated && roundDetails && !roundDetails.completed && !roundEnded && voteDetails?.hasVoted;
   const canRestart = roundEnded && !roundDetails?.completed && project.proposer === userInfo.address;
 
   // If project is not completed yet, don't show community check
@@ -474,6 +480,7 @@ const ProjectList = () => {
       setCommunityCheckStatus(null);
       setRoundDetails(null);
     } else {
+      setSelectedProject(null);
       await loadCommunityCheckStatus(project.id);
       setSelectedProject(project.id);
     }
