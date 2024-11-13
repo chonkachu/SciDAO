@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import DAO_ABI from '../contract/abi.json';
 
 const DAO_ADDRESS = "0x6722169CF3259678D79C95673B390d318d3f0E90";
-const TOKENS_TO_WEI = BigInt("1000000000000"); // 1000 Gwei (1 token = 1000 Gwei from contract)
+const TOKENS_TO_WEI = BigInt("1000000000000"); 
 
 export default function DAOApp() {
   const [provider, setProvider] = useState(null);
@@ -24,7 +24,7 @@ export default function DAOApp() {
     return BigInt(Math.floor(tokens)) * TOKENS_TO_WEI;
   };
 
-  // Convert wei to tokens for display
+  
   const weiToTokens = (wei) => {
     return Number(wei) / Number(TOKENS_TO_WEI);
   };
@@ -36,7 +36,7 @@ export default function DAOApp() {
     setProjects([]);
     setError(null);
   };
-  // Connect to MetaMask
+  
   const connectWallet = async () => {
     try {
       if (window.ethereum) {
@@ -52,14 +52,14 @@ export default function DAOApp() {
         console.log("CONNECTED!");
         console.log(account);
 
-        // Load user info if exists
+        
       }
     } catch (err) {
       setError('Failed to connect wallet: ' + err.message);
     }
   };
 
-  // Load user information
+  
   const loadUserInfo = async (address, contract) => {
     try {
       const info = await contract.getUserInfo(address);
@@ -76,7 +76,7 @@ export default function DAOApp() {
     }
   };
 
-  // Load projects
+  
   const loadProjects = async () => {
     try {
       const nextId = await contract.nextProjectId();
@@ -84,7 +84,7 @@ export default function DAOApp() {
 
       for (let i = 0; i < nextId; i++) {
         const project = await contract.getProjectDetails(i);
-        if (project[6]) { // exists
+        if (project[6]) { 
           projectsData.push({
             id: i,
             proposer: project[1],
@@ -114,7 +114,7 @@ const loadCommunityCheckStatus = async (projectId) => {
       currentRoundVotes: status[3].toString()
     });
 
-    if (status[0]) { // if initiated
+    if (status[0]) { 
       const round = await contract.getRoundDetails(projectId, status[1]);
       setRoundDetails({
         startTime: new Date(Number(round[0]) * 1000),
@@ -132,7 +132,7 @@ const loadCommunityCheckStatus = async (projectId) => {
     setError('Failed to load community check status: ' + err.message);
   }
 };
-  // Register Form Component
+  
   const RegisterForm = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -238,12 +238,12 @@ const RoundVoting = ({ project }) => {
   };
 
   const now = Date.now();
-  const roundEndTime = roundDetails?.startTime?.getTime() + (7 * 24 * 60 * 60 * 1000); // 7 days
+  const roundEndTime = roundDetails?.startTime?.getTime() + (7 * 24 * 60 * 60 * 1000); 
   const roundEnded = roundEndTime && now > roundEndTime;
   const canVote = communityCheckStatus?.initiated && roundDetails && !roundDetails.completed && !roundEnded && voteDetails?.hasVoted;
   const canRestart = roundEnded && !roundDetails?.completed && project.proposer === userInfo.address;
 
-  // If project is not completed yet, don't show community check
+  
   if (!project.completed) {
     return (
       <div className="mt-4 text-center text-gray-600">
@@ -252,7 +252,7 @@ const RoundVoting = ({ project }) => {
     );
   }
 
-  // If community check not initiated
+  
   if (!communityCheckStatus?.initiated) {
     return (
       <div className="mt-4 space-y-4">
@@ -330,7 +330,7 @@ const RoundVoting = ({ project }) => {
     </div>
   );
 };
-  // Project Form Component
+  
   const ProjectForm = () => {
     const [name, setName] = useState('');
     const [pdfLink, setPdfLink] = useState('');
@@ -385,7 +385,7 @@ const RoundVoting = ({ project }) => {
     );
   };
 
-  // Token Management Component
+  
   const TokenManagement = () => {
     const [depositTokens, setDepositTokens] = useState('');
     const [withdrawTokens, setWithdrawTokens] = useState('');
@@ -470,7 +470,7 @@ const RoundVoting = ({ project }) => {
     );
   };
 
-// Project List Component
+
 const ProjectList = () => {
   const [voteAmount, setVoteAmount] = useState({});
 
@@ -614,7 +614,7 @@ return (
             ) : (
               <div className="flex gap-6">
 
-                {/* Other Components - Right Side */}
+                {  }
                 <div className="w-1/2 space-y-6">
                   <div className="bg-gray-50 p-6 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">User Info</h2>
@@ -641,7 +641,7 @@ return (
                   </div>
                 </div>
 
-                {/* Projects Section - Left Side */}
+                {  }
                 <div className="w-1/2 bg-white rounded-lg border">
                   <div className="p-6">
                     <h2 className="text-xl font-bold mb-4">Projects</h2>

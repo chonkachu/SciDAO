@@ -64,16 +64,16 @@ contract DAO {
     event RoundReset(uint indexed projectId, uint indexed roundNumber, uint version, uint timestamp);
     
     uint public nextProjectId;
-    uint public constant VOTE_THRESHOLD = 100; // Project succeeds when it gets 100 tokens worth of votes
+    uint public constant VOTE_THRESHOLD = 100; 
     uint public constant COMMUNITY_CHECK_ROUNDS = 10;
     uint public constant ROUND_DURATION = 7 days;
-    uint public constant REWARD_PERCENTAGE = 10;  // 10% per successful 
+    uint public constant REWARD_PERCENTAGE = 10;  
 
     mapping(uint => Project) projects;
     mapping(address => uint) public userTokenBalance;
     mapping(address => UserInfo) public users;
     
-    uint256 constant TOKENS_TO_WEI = 1000*1000000000;  // 1 token = 1000 Gwei
+    uint256 constant TOKENS_TO_WEI = 1000*1000000000;  
     
     function getBalance() public view returns (uint) {
         return address(this).balance;
@@ -83,7 +83,7 @@ contract DAO {
         require(msg.value > TOKENS_TO_WEI, "Deposit must be at least 1 token");
         require(!users[msg.sender].exists, "User already registered");
         
-        // Store user data
+        
         users[msg.sender] = UserInfo({
             name: name,
             email: email,
@@ -91,7 +91,7 @@ contract DAO {
             exists: true
         });
         
-        // Convert initial deposit to tokens
+        
         uint tokens = msg.value / TOKENS_TO_WEI;
         userTokenBalance[msg.sender] = tokens;
         
@@ -105,7 +105,7 @@ contract DAO {
         
         uint tokens = msg.value / TOKENS_TO_WEI;
         
-        // Update user's deposited amount and token balance
+        
         users[msg.sender].amountDeposited += msg.value;
         userTokenBalance[msg.sender] += tokens;
         
@@ -120,10 +120,10 @@ contract DAO {
         require(users[msg.sender].exists, "User not registered");
         require(userTokenBalance[msg.sender] >= tokensToUse, "Insufficient tokens");
         
-        // Deduct tokens
+        
         userTokenBalance[msg.sender] -= tokensToUse;
         
-        // Create new project
+        
         uint projectId = nextProjectId++;
         Project storage newProject = projects[projectId];
         newProject.id = projectId;
@@ -131,11 +131,11 @@ contract DAO {
         newProject.name = name;
         newProject.pdfLink = pdfLink;
         newProject.initialTokens = tokensToUse;
-        newProject.totalVotes = tokensToUse; // Initial tokens count as votes
+        newProject.totalVotes = tokensToUse; 
         newProject.exists = true;
         newProject.completed = false;
         
-        // Register proposer's initial tokens as votes
+        
         newProject.votes[msg.sender] = Vote({
             tokens: tokensToUse,
             hasVoted: true
@@ -153,21 +153,21 @@ contract DAO {
 
         Project storage project = projects[projectId];
         
-        // Deduct tokens from voter
+        
         userTokenBalance[msg.sender] -= tokensToUse;
         
-        // Record the vote
+        
         project.votes[msg.sender] = Vote({
             tokens: tokensToUse,
             hasVoted: true
         });
         
-        // Update total votes
+        
         project.totalVotes += tokensToUse;
         
         emit VoteCast(projectId, msg.sender, tokensToUse);
         
-        // Check if project has reached threshold
+        
         if (project.totalVotes >= VOTE_THRESHOLD && !project.completed) {
             completeProject(projectId);
         }
@@ -181,10 +181,10 @@ contract DAO {
         emit ProjectCompleted(projectId, project.proposer, project.totalVotes);
     }
 
-    // New functions for community check phase
+    
 
-    /// @notice Initiates the community check phase for a completed project
-    /// @param projectId The ID of the project to start community check for
+    
+    
     function initiateCommunityCommunityCheck(uint projectId) external {
         require(projects[projectId].exists, "Project does not exist");
         Project storage project = projects[projectId];
@@ -192,26 +192,26 @@ contract DAO {
         require(project.completed, "Project not completed");
         require(!project.communityCheck.initiated, "Community check already initiated");
         
-        // Initialize community check structure
+        
         project.communityCheck.initiated = true;
         project.communityCheck.currentRound = 1;
         project.communityCheck.totalRounds = COMMUNITY_CHECK_ROUNDS;
         project.communityCheck.completed = false;
         
-        // Count total voters for calculating threshold
-        uint voterCount = project.totalVotes;
-        // This is a simplified version - you might want to optimize this
-        project.communityCheck.voterCount = voterCount;
-        project.communityCheck.requiredVotes = voterCount/2+1; // +1 for rounding up
         
-        // Initialize first round
+        uint voterCount = project.totalVotes;
+        
+        project.communityCheck.voterCount = voterCount;
+        project.communityCheck.requiredVotes = voterCount/2+1; 
+        
+        
         project.communityCheck.rounds[1].startTime = block.timestamp;
         
         emit CommunityCheckInitiated(projectId, block.timestamp);
     }
 
-    /// @notice Allows original voters to cast their vote in the current round
-    /// @param projectId The ID of the project to vote on, 1 token = 1 vote
+    
+    
     function castRoundVote(uint projectId) external {
         require(projects[projectId].exists, "Project does not exist");
 
@@ -235,8 +235,8 @@ contract DAO {
         }
     }
 
-    /// @notice Completes the current round and distributes rewards if threshold met
-    /// @param projectId The ID of the project to complete round for
+    
+    
     function completeRound(uint projectId) internal {
 
         Project storage project = projects[projectId];
@@ -247,7 +247,7 @@ contract DAO {
         
         round.completed = true;
 
-        // Calculate and distribute reward
+        
         uint rewardAmount = (project.totalVotes * REWARD_PERCENTAGE) / 100;
         if (currentRound == 10) {
             rewardAmount = project.totalStake;
@@ -258,7 +258,7 @@ contract DAO {
         round.rewardDistributed = true;
         emit RewardDistributed(projectId, currentRound, rewardAmount);
 
-        // Move to next round if not last
+        
         if (currentRound < COMMUNITY_CHECK_ROUNDS) {
             project.communityCheck.currentRound++;
             project.communityCheck.rounds[currentRound + 1].startTime = block.timestamp;
@@ -291,9 +291,9 @@ contract DAO {
         emit RoundReset(projectId, currentRound, round.version, block.timestamp);
     }
 
-    /// @notice Gets the details of a specific round
-    /// @param projectId The ID of the project
-    /// @param roundNumber The round number to get details for
+    
+    
+    
     function getRoundDetails(uint projectId, uint roundNumber) external view returns (
         uint startTime,
         uint totalVotesCast,
@@ -312,8 +312,8 @@ contract DAO {
         );
     }
 
-    /// @notice Gets the overall status of the community check phase
-    /// @param projectId The ID of the project
+    
+    
     function getCommunityCheckStatus(uint projectId) external view returns (
         bool initiated,
         uint round,
@@ -391,16 +391,16 @@ contract DAO {
         require(userTokenBalance[msg.sender] >= amount, "Insufficient token balance");
         require(amount > 0, "Amount must be greater than 0");
 
-        // Calculate Ether amount based on token conversion rate
+        
         uint etherAmount = amount * TOKENS_TO_WEI;
 
-        // Check contract has enough Ether
+        
         require(address(this).balance >= etherAmount, "Insufficient contract balance");
 
-        // Update token balance before transfer to prevent reentrancy
+        
         userTokenBalance[msg.sender] -= amount;
 
-        // Transfer Ether to user
+        
         (bool sent, ) = msg.sender.call{value: etherAmount}("");
         require(sent, "Failed to send Ether");
 
