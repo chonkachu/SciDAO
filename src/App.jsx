@@ -217,6 +217,7 @@ const RoundVoting = ({ project }) => {
       const tx = await contract.castRoundVote(project.id);
       await tx.wait();
       await loadCommunityCheckStatus(project.id);
+      await loadUserInfo(account, contract);
     } catch (err) {
       setError('Failed to cast round vote: User Already voted!');
     } finally {
@@ -493,6 +494,11 @@ const ProjectList = () => {
       await tx.wait();
       await loadProjects();
       await loadUserInfo(account, contract);
+      const vote = await contract.getVoteDetails(projectId, account);
+      setVoteDetails({
+        tokens: vote[0],
+        hasVoted: vote[1]
+      });
     } catch (err) {
       setError('Voting failed: ' + err.message);
     } finally {
@@ -537,7 +543,7 @@ const ProjectList = () => {
           )}
 
           {/* Show voting interface only if project is not completed and user is not the proposer */}
-          {!project.completed && project.proposer !== userInfo.address && (
+          {!project.completed && project.proposer !== userInfo.address && !voteDetails?.hasVoted && (
             <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
               <input
                 type="number"
