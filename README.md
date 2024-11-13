@@ -15,5 +15,6 @@ O endereço do contrato na rede Sepolia é 0x6722169CF3259678D79C95673B390d318d3
 Passos para rodar o código: 
 
 1. `git clone https://github.com/chonkachu/SciDAO.git`
-2. `npm install`
-3. `npm run dev`
+2. `cd SciDAO`
+3. `npm install`
+4. `npm run dev`
