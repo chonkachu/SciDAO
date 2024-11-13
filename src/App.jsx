@@ -343,7 +343,7 @@ const RoundVoting = ({ project }) => {
         const tx = await contract.proposeProject(name, pdfLink, tokens);
         await tx.wait();
         await loadProjects();
-        await loadUserInfo();
+        await loadUserInfo(account, contract);
       } catch (err) {
         setError('Failed to create project: ' + err.message);
       } finally {
